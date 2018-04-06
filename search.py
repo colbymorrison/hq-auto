@@ -1,15 +1,11 @@
 from PIL import Image
 from googleapiclient.discovery import build
 import pytesseract
-import pprint
-
-
-
 
 
 def img_to_text(file):
     tess = pytesseract.image_to_string(Image.open(file))
-    ques, ans1, ans2, ans3 = "", "", "", ""
+    ques, ans0, ans1, ans2 = "", "", "", ""
     ln = 0
 
     for i in tess.split('\n'):
@@ -17,32 +13,38 @@ def img_to_text(file):
             ques += i
             ln = ln + 1
             if i.endswith("?"):
-                ans1 = tess.splitlines()[ln + 2]
-                ans2 = tess.splitlines()[ln + 4]
-                ans3 = tess.splitlines()[ln + 6]
+                ans0 = tess.splitlines()[ln + 2]
+                ans1 = tess.splitlines()[ln + 4]
+                ans2 = tess.splitlines()[ln + 6]
                 break
 
-    q_as = {'ques': ques, 'ans1': ans1, 'ans2': ans2, 'ans3': ans3}
+    q_as = {'ques': ques, 'ans0': ans0, 'ans1': ans1, 'ans2': ans2}
     return q_as
 
 
-def google_search(string):
+def google_search(question, answer):
+    search_str = "{}\"{}\"".format(question, answer)
     service = build("customsearch", "v1",
                     developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
-    res = service.cse().list(q=string, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
-    res = res['items']
-    for result in res:
-        pprint.pprint(result)
+    res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
+    res = res['searchInformation']
+    return res['totalResults']
+
+
+def search_answer(q_as, num):
+    answer = q_as['ans{}'.format(num)]
+    results = google_search(q_as['ques'], answer)
+    print("{}: {}\n".format(answer, results))
 
 
 def search(file):
     q_as = img_to_text(file)
-    google_search(q_as['ques'])
-
+    for i in range(0, 2):
+        search_answer(q_as, i)
 
 
 def main():
-    serach_google("hello")
+    search("results/screenshot-5.png")
 
 
 if __name__ == "__main__":
