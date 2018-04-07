@@ -2,6 +2,7 @@ from PIL import Image
 from googleapiclient.discovery import build
 import pytesseract
 import os
+import logging
 import sys
 import time
 
@@ -14,7 +15,6 @@ def img_to_text(path):
     tess = os.linesep.join([s for s in tess.splitlines() if s])
     tess = tess.replace('"', ' ')
     tess = tess.replace('\'', ' ')
-
 
     for i in tess.splitlines():
         if not i.strip(): continue
@@ -48,31 +48,22 @@ def google_search(search_str):
         return res
 
 
-def number_results(res, answer):
+def results_dict(q_as, num):
+    question = q_as['ques']
+    answer = q_as['ans{}'.format(num)]
+
+    res = google_search("{} {}".format(question, answer))
     search_inf = res['searchInformation']
-    return {'ans': answer, 'res':  search_inf['totalResults']}
 
-
-def word_matches(res, answer):
-    items = res['items']
+    res_b = google_search(question)
+    items = res_b['items']
     count = 0
     for i in items:
         for value in i.values():
             if isinstance(value, str):
                 count += value.lower().count(answer.lower())
 
-    return {'ans': answer, 'count': count}
-
-
-def search_answer(q_as, num, opt):
-    question = q_as['ques']
-    answer = q_as['ans{}'.format(num)]
-    if opt == 0:
-        res = google_search("{} {}".format(question, answer))
-        return number_results(res, answer)
-    else:
-        res = google_search(question)
-        return word_matches(res, answer)
+    return {'ans': answer, 'results':  search_inf['totalResults'], 'count': count}
 
 
 def search(file):
@@ -82,20 +73,30 @@ def search(file):
     print("Question --------------> {} \n".format(q_as['ques']))
 
     for i in range(0, 3):
-        results.append(search_answer(q_as, i, 1))
+        results.append(results_dict(q_as, i))
 
-    results = sorted(results, key=lambda d: d['count'], reverse=True)
+    count_sort = sorted(results, key=lambda d: d['count'], reverse=True)
+    results_sort = sorted(results, key=lambda d: d['results'], reverse=True)
 
-    print("Most Likely Answer ----> {} with {} matches\n".format(results[0]['ans'], results[0]['count']))
+    print(results_sort)
+
+    if count_sort[0] == results_sort[0]:
+        most_likely = count_sort[0]
+    else:
+        most_likely = results_sort[0]
+
+    print("Most Likely Answer ----> {} with {} matches and {} results\n".
+          format(most_likely['ans'], most_likely['count'], most_likely['results']))
 
     for dct in results[1:]:
-        print("Answer ----------------> {} with {} matches\n ".format(dct['ans'], dct['count']))
+        print("Answer ----------------> {} with {} matches and {} results\n "
+              .format(dct['ans'], dct['count'], dct['results']))
 
-    os.system('./callpy.sh')
+    #os.system('./delete.sh')
 
 
 def main():
-    path = "resources/auto-shot.png"
+    path = "resources/screenshot-5.png"
 
     while not os.path.exists(path):
         time.sleep(1)
