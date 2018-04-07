@@ -32,49 +32,61 @@ def img_to_text(file):
 
 
 def google_search(question, answer):
-    search_str = "{} {}".format(question, answer)
+    #search_str = "{} {}".format(question, answer)
     service = build("customsearch", "v1",
                     developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
-    res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=1).execute()
+    res = service.cse().list(q=question, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
 
     try:
         spell = res['spelling']
         corr_str = spell['correctedQuery']
-        print(corr_str)
-        resNew = service.cse().list(q=corr_str, cx="004635228232604600486:dehcqnd7kkq", num=1).execute()
-        search = resNew['searchInformation']
-    except KeyError:
-        search = res['searchInformation']
+        res = service.cse().list(q=corr_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
 
-    return {'ans': answer, 'res':  search['totalResults']}
+    finally:
+        return res
 
 
-def search_answer(q_as, num):
+def number_results(res, answer):
+    search_inf = res['searchInformation']
+    return {'ans': answer, 'res':  search_inf['totalResults']}
+
+
+def word_matches(res, answer):
+    items = res['items']
+    count = 0
+    for i in items:
+        for value in i.values():
+            if isinstance(value, str):
+                count += value.lower().count(answer.lower())
+
+    return {'ans': answer, 'count': count}
+
+
+def search_answer(q_as, num, opt):
+    question = q_as['ques']
     answer = q_as['ans{}'.format(num)]
-    return google_search(q_as['ques'], answer)
+    res = google_search(question, answer)
+    if opt == 0:
+        return number_results(res, answer)
+    else:
+        return word_matches(res, answer)
 
 
 def search(file):
     q_as = img_to_text(file)
     results = []
     for i in range(0, 3):
-        results.append(search_answer(q_as, i))
+        results.append(search_answer(q_as, i, 1))
 
-    best = max(results[0]['res'], results[1]['res'], results[2]['res'])
-
-    for dct in results:
-        if dct['res'] == best:
-            print("{} with {} results\n\n".format(dct['ans'], dct['res']))
-            results.remove(dct)
+    results = sorted(results, key=lambda d: d['count'], reverse=True)
 
     for dct in results:
-        print("{} with {} results".format(dct['ans'], dct['res']))
+        print("{} with {} results\n".format(dct['ans'], dct['count']))
 
 
 def main():
-    search("resources/screenshot-5.png")
-    #google_search("hi", "hi")
-    #print(img_to_text("resources/screenshot-8.png"))
+    search("resources/screenshot-1.png")
+
 
 if __name__ == "__main__":
     main()
