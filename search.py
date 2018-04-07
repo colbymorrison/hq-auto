@@ -72,6 +72,16 @@ def results_dict(q_as, num):
     return {'ans': answer, 'results':  search_inf['totalResults'], 'count': count}
 
 
+def rank(count_sort, results_sort):
+    # From dictionary of answers sored by count and number of results picks the most likeley answer to the question
+    if count_sort[0] == results_sort[0]:
+        most_likely = count_sort[0]
+    else:
+        most_likely = results_sort[0]
+
+    return most_likely
+
+
 def search(file):
     q_as = img_to_text(file)
     results = []
@@ -84,12 +94,7 @@ def search(file):
     count_sort = sorted(results, key=lambda d: d['count'], reverse=True)
     results_sort = sorted(results, key=lambda d: d['results'], reverse=True)
 
-    print(results_sort)
-
-    if count_sort[0] == results_sort[0]:
-        most_likely = count_sort[0]
-    else:
-        most_likely = results_sort[0]
+    most_likely = rank(count_sort, results_sort)
 
     print("Most Likely Answer ----> {} with {} matches and {} results\n".
           format(most_likely['ans'], most_likely['count'], most_likely['results']))
