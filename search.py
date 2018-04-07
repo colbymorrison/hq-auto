@@ -35,14 +35,17 @@ def google_search(question, answer):
     search_str = "{} {}".format(question, answer)
     service = build("customsearch", "v1",
                     developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
-    print(search_str)
-    res = service.cse().list(q="What did Yankee Doodle stickin his cap? Feather", cx="004635228232604600486:dehcqnd7kkq", num=1).execute()
+    res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=1).execute()
 
+    try:
+        spell = res['spelling']
+        corr_str = spell['correctedQuery']
+        print(corr_str)
+        resNew = service.cse().list(q=corr_str, cx="004635228232604600486:dehcqnd7kkq", num=1).execute()
+        search = resNew['searchInformation']
+    except KeyError:
+        search = res['searchInformation']
 
-    search = res['searchInformation']
-    spell = res['spelling']
-    print(spell['correctedQuery'])
-    print(search['totalResults'])
     return {'ans': answer, 'res':  search['totalResults']}
 
 
@@ -56,21 +59,21 @@ def search(file):
     results = []
     for i in range(0, 3):
         results.append(search_answer(q_as, i))
-    
+
     best = max(results[0]['res'], results[1]['res'], results[2]['res'])
-    
+
     for dct in results:
         if dct['res'] == best:
             print("{} with {} results\n\n".format(dct['ans'], dct['res']))
             results.remove(dct)
-        
+
     for dct in results:
         print("{} with {} results".format(dct['ans'], dct['res']))
-        
+
 
 def main():
-    #search("resources/screenshot-3.png")
-    google_search("hi", "hi")
+    search("resources/screenshot-5.png")
+    #google_search("hi", "hi")
     #print(img_to_text("resources/screenshot-8.png"))
 
 if __name__ == "__main__":
