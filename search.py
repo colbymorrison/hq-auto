@@ -8,15 +8,18 @@ import time
 
 
 def img_to_text(path):
+    # Extracts text from an image 
     tess = pytesseract.image_to_string(Image.open(path))
     ques, ans0, ans1, ans2 = "", "", "", ""
     ln = 0
+    lines = tess.splitlines()
 
-    tess = os.linesep.join([s for s in tess.splitlines() if s])
+    # remove blank lines and quotes
+    tess = os.linesep.join([s for s in lines if s])
     tess = tess.replace('"', ' ')
     tess = tess.replace('\'', ' ')
 
-    for i in tess.splitlines():
+    for i in lines:
         if not i.strip(): continue
         if not i[0:1].isalpha():
             ln = ln + 1
@@ -24,17 +27,18 @@ def img_to_text(path):
         ques += i
         ln = ln + 1
         if i.endswith("?"):
-            ans0 = tess.splitlines()[ln]
-            ans1 = tess.splitlines()[ln+1]
-            ans2 = tess.splitlines()[ln+2]
+            ans0 = lines[ln]
+            ans1 = lines[ln+1]
+            ans2 = lines[ln+2]
             break
 
-    ques = ques.replace("\"","")
+    # Return dictionary of question and answers
     q_as = {'ques': ques, 'ans0': ans0, 'ans1': ans1, 'ans2': ans2}
     return q_as
 
 
 def google_search(search_str):
+    # Searches google for a string
     service = build("customsearch", "v1",
                     developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
     res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
@@ -49,6 +53,8 @@ def google_search(search_str):
 
 
 def results_dict(q_as, num):
+    # Creates dictionary of answer, the number of times it appeared in the first 10 google results,
+    # and the total number of google search results the question/answer combination returned
     question = q_as['ques']
     answer = q_as['ans{}'.format(num)]
 
