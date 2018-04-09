@@ -10,6 +10,7 @@ import sys
 
 service = build("customsearch", "v1", developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
 
+
 def img_to_text(path):
     # Extracts text from an image 
     tess = pytesseract.image_to_string(Image.open(path))
@@ -67,7 +68,6 @@ def answer_count(res, answer):
 def answer_results(question, answer):
     # Creates dictionary of answer, the number of times it appeared in the first 10 google results,
     # and the total number of google search results the question/answer combination returned
-    #print(("{} {}".format(question, answer)))
     search_str = "{} {}".format(question, answer)
     res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
     search_inf = res['searchInformation']
@@ -94,7 +94,7 @@ def search(file):
     question_raw = q_as['ques']
 
     print("Question --------------> {} \n".format(question_raw))
-    #webbrowser.open("https://www.google.com/search?q={}".format(question_raw))
+    webbrowser.open("https://www.google.com/search?q={}".format(question_raw))
 
     res, cor_ques = google_search_question(question_raw)
 
