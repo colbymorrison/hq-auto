@@ -1,9 +1,13 @@
+# Inspired by hackernoon.com/i-hacked-hq-trivia-but-heres-how-they-can-stop-me-68750ed16365
+
 from PIL import Image
 from googleapiclient.discovery import build
 import pytesseract
 import os
+import webbrowser
 import logging
 import sys
+import datetime
 import time
 
 
@@ -18,6 +22,8 @@ def img_to_text(path):
     tess = os.linesep.join([s for s in lines if s])
     tess = tess.replace('"', ' ')
     tess = tess.replace('\'', ' ')
+
+    lines = tess.splitlines()
 
     for i in lines:
         if not i.strip(): continue
@@ -39,8 +45,7 @@ def img_to_text(path):
 
 def google_search(search_str):
     # Searches google for a string
-    service = build("customsearch", "v1",
-                    developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
+    service = build("customsearch", "v1", developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
     res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
 
     try:
@@ -69,17 +74,19 @@ def results_dict(q_as, num):
             if isinstance(value, str):
                 count += value.lower().count(answer.lower())
 
-    return {'ans': answer, 'results':  search_inf['totalResults'], 'count': count}
+    return {'ans': answer, 'results':  int(search_inf['totalResults']), 'count': count}
 
 
 def rank(count_sort, results_sort):
     # From dictionary of answers sored by count and number of results picks the most likeley answer to the question
     if count_sort[0] == results_sort[0]:
-        most_likely = count_sort[0]
+        return count_sort[0]
+    elif count_sort[0]["count"] == count_sort[1]["count"] == count_sort[2]["count"]:
+            return results_sort[0]
+    elif count_sort[0]["results"] == count_sort[1]["results"] == count_sort[2]["results"]:
+            return count_sort[0]
     else:
-        most_likely = results_sort[0]
-
-    return most_likely
+        return {'ans': "CLASH"}
 
 
 def search(file):
@@ -87,6 +94,7 @@ def search(file):
     results = []
 
     print("Question --------------> {} \n".format(q_as['ques']))
+    #webbrowser.open("https://www.google.com/search?q={}".format(q_as['ques']))
 
     for i in range(0, 3):
         results.append(results_dict(q_as, i))
@@ -94,26 +102,43 @@ def search(file):
     count_sort = sorted(results, key=lambda d: d['count'], reverse=True)
     results_sort = sorted(results, key=lambda d: d['results'], reverse=True)
 
-    most_likely = rank(count_sort, results_sort)
+    res = rank(count_sort, results_sort)
 
-    print("Most Likely Answer ----> {} with {} matches and {} results\n".
-          format(most_likely['ans'], most_likely['count'], most_likely['results']))
+    print(count_sort)
+    print(results_sort)
 
-    for dct in results[1:]:
-        print("Answer ----------------> {} with {} matches and {} results\n "
-              .format(dct['ans'], dct['count'], dct['results']))
+    print("\n Most likely answer: {}".format(res['ans']))
 
-    #os.system('./delete.sh')
+
+    # i = 0
+    #
+    # print("Answers by count: \n")
+    # for dct in count_sort:
+    #     print("{}: {} --------> with {} matches\n".
+    #           format(i, dct['ans'], dct['count']))
+    #     i += 1
+    #
+    # i = 0
+    # print("Answers by results: \n")
+    # for dct in results_sort:
+    #     print("{}: {} --------> with {} matches \n".
+    #           format(i, dct['ans'], dct['count']))
+    #
+    # os.system('./delete.sh')
 
 
 def main():
-    path = "resources/screenshot-5.png"
+    path = "resources/shot-7.51.21 PM.png"
 
     while not os.path.exists(path):
         time.sleep(1)
 
     if os.path.isfile(path):
+        before = time.time()
         search(path)
+        after = time.time()
+
+        print("Time: {}".format(after-before))
 
 
 if __name__ == "__main__":
