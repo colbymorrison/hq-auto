@@ -5,8 +5,7 @@ from googleapiclient.discovery import build
 import pytesseract
 import os
 import webbrowser
-import time
-import sys
+
 
 service = build("customsearch", "v1", developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
 
@@ -87,7 +86,7 @@ def rank(count_sort, results_sort):
         return {'ans': "CLASH"}
 
 
-def search(file):
+def search_from_photo(file):
     q_as = img_to_text(file)
     results = []
 
@@ -109,44 +108,11 @@ def search(file):
 
     most_likely = rank(count_sort, results_sort)['ans']
 
-    if most_likely == "CLASH":
-        print("Conflicted: {} had highest count but {} had most results"
-              .format(count_sort[0]['ans'], results_sort[0]['ans']))
-    else:
-        print("\n Most likely answer: {}\n".format(most_likely))
-
-    os.system('./delete.sh')
+    return most_likely, count_sort[0], results_sort[0]
 
 
-def execute(path):
-    before = time.time()
-    search(path)
-    after = time.time()
-
-    print("Time: {} s\n\n".format(after - before))
 
 
-def run_game(path):
-    try:
-        while True:
-            while not os.path.exists(path):
-                time.sleep(1)
-
-            if os.path.isfile(path):
-                execute(path)
-    except KeyboardInterrupt:
-        print("\nGoodbye!")
 
 
-def main():
-    print("Script has started \n")
-    path = "resources/shot-7.51.29 PM.png"
 
-    if sys.argv[1] == 0:
-        run_game(path)
-    else:
-        execute(path)
-
-
-if __name__ == "__main__":
-    main()
