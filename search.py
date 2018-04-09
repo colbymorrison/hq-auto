@@ -6,7 +6,9 @@ import pytesseract
 import os
 import webbrowser
 import time
+import sys
 
+service = build("customsearch", "v1", developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
 
 def img_to_text(path):
     # Extracts text from an image 
@@ -40,10 +42,9 @@ def img_to_text(path):
     return q_as
 
 
-def google_search(search_str):
-    # Searches google for a string
-    service = build("customsearch", "v1", developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
-    res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
+def google_search_question(question):
+    corr_str = question
+    res = service.cse().list(q=question, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
 
     try:
         spell = res['spelling']
@@ -51,25 +52,27 @@ def google_search(search_str):
         res = service.cse().list(q=corr_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
 
     finally:
-        return res
+        return res, corr_str
 
 
-def results_dict(q_as, num):
-    # Creates dictionary of answer, the number of times it appeared in the first 10 google results,
-    # and the total number of google search results the question/answer combination returned
-    question = q_as['ques']
-    answer = q_as['ans{}'.format(num)]
-
-    res = google_search("{} {}".format(question, answer))
-    search_inf = res['searchInformation']
-
-    res_b = google_search(question)
-    items = res_b['items']
+def answer_count(res, answer):
+    items = res['items']
     count = 0
     for i in items:
         count += i['snippet'].lower().count(answer.lower())
 
-    return {'ans': answer, 'results':  int(search_inf['totalResults']), 'count': count}
+    return {'count': count}
+
+
+def answer_results(question, answer):
+    # Creates dictionary of answer, the number of times it appeared in the first 10 google results,
+    # and the total number of google search results the question/answer combination returned
+    #print(("{} {}".format(question, answer)))
+    search_str = "{} {}".format(question, answer)
+    res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
+    search_inf = res['searchInformation']
+
+    return {'ans': answer, 'results':  int(search_inf['totalResults'])}
 
 
 def rank(count_sort, results_sort):
@@ -88,11 +91,18 @@ def search(file):
     q_as = img_to_text(file)
     results = []
 
-    print("Question --------------> {} \n".format(q_as['ques']))
-    #webbrowser.open("https://www.google.com/search?q={}".format(q_as['ques']))
+    question_raw = q_as['ques']
+
+    print("Question --------------> {} \n".format(question_raw))
+    #webbrowser.open("https://www.google.com/search?q={}".format(question_raw))
+
+    res, cor_ques = google_search_question(question_raw)
 
     for i in range(0, 3):
-        results.append(results_dict(q_as, i))
+        answer = q_as['ans{}'.format(i)]
+        results_dict = answer_results(cor_ques, answer)
+        results_dict.update(answer_count(res, answer))
+        results.append(results_dict)
 
     count_sort = sorted(results, key=lambda d: d['count'], reverse=True)
     results_sort = sorted(results, key=lambda d: d['results'], reverse=True)
@@ -108,25 +118,34 @@ def search(file):
     os.system('./delete.sh')
 
 
+def execute(path):
+    before = time.time()
+    search(path)
+    after = time.time()
+
+    print("Time: {} s\n\n".format(after - before))
+
+
+def run_game(path):
+    try:
+        while True:
+            while not os.path.exists(path):
+                time.sleep(1)
+
+            if os.path.isfile(path):
+                execute(path)
+    except KeyboardInterrupt:
+        print("\nGoodbye!")
+
+
 def main():
     print("Script has started \n")
+    path = "resources/shot-7.51.29 PM.png"
 
-    #try:
-        #while True:
-    path = "resources/shot-7.51.08 PM.png"
-
-    while not os.path.exists(path):
-        time.sleep(1)
-
-    if os.path.isfile(path):
-        before = time.time()
-        search(path)
-        after = time.time()
-
-        print("Time: {} s\n\n".format(after - before))
-    #except KeyboardInterrupt:
-       # print("\nGoodbye!")
-
+    if sys.argv[1] == 0:
+        run_game(path)
+    else:
+        execute(path)
 
 
 if __name__ == "__main__":
