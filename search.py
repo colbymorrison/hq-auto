@@ -67,9 +67,7 @@ def results_dict(q_as, num):
     items = res_b['items']
     count = 0
     for i in items:
-        for value in i.values():
-            if isinstance(value, str):
-                count += value.lower().count(answer.lower())
+        count += i['snippet'].lower().count(answer.lower())
 
     return {'ans': answer, 'results':  int(search_inf['totalResults']), 'count': count}
 
@@ -91,7 +89,7 @@ def search(file):
     results = []
 
     print("Question --------------> {} \n".format(q_as['ques']))
-    webbrowser.open("https://www.google.com/search?q={}".format(q_as['ques']))
+    #webbrowser.open("https://www.google.com/search?q={}".format(q_as['ques']))
 
     for i in range(0, 3):
         results.append(results_dict(q_as, i))
@@ -113,21 +111,21 @@ def search(file):
 def main():
     print("Script has started \n")
 
-    try:
-        while True:
-            path = "resources/auto-shot.png"
+    #try:
+        #while True:
+    path = "resources/shot-7.51.08 PM.png"
 
-            while not os.path.exists(path):
-                time.sleep(1)
+    while not os.path.exists(path):
+        time.sleep(1)
 
-            if os.path.isfile(path):
-                before = time.time()
-                search(path)
-                after = time.time()
+    if os.path.isfile(path):
+        before = time.time()
+        search(path)
+        after = time.time()
 
-                print("Time: {} s\n\n".format(after - before))
-    except KeyboardInterrupt:
-        print("\nGoodbye!")
+        print("Time: {} s\n\n".format(after - before))
+    #except KeyboardInterrupt:
+       # print("\nGoodbye!")
 
 
 
