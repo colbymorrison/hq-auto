@@ -5,9 +5,6 @@ from googleapiclient.discovery import build
 import pytesseract
 import os
 import webbrowser
-import logging
-import sys
-import datetime
 import time
 
 
@@ -94,7 +91,7 @@ def search(file):
     results = []
 
     print("Question --------------> {} \n".format(q_as['ques']))
-    #webbrowser.open("https://www.google.com/search?q={}".format(q_as['ques']))
+    webbrowser.open("https://www.google.com/search?q={}".format(q_as['ques']))
 
     for i in range(0, 3):
         results.append(results_dict(q_as, i))
@@ -102,43 +99,36 @@ def search(file):
     count_sort = sorted(results, key=lambda d: d['count'], reverse=True)
     results_sort = sorted(results, key=lambda d: d['results'], reverse=True)
 
-    res = rank(count_sort, results_sort)
+    most_likely = rank(count_sort, results_sort)['ans']
 
-    print(count_sort)
-    print(results_sort)
+    if most_likely == "CLASH":
+        print("Conflicted: {} had highest count but {} had most results"
+              .format(count_sort[0]['ans'], results_sort[0]['ans']))
+    else:
+        print("\n Most likely answer: {}\n".format(most_likely))
 
-    print("\n Most likely answer: {}".format(res['ans']))
-
-
-    # i = 0
-    #
-    # print("Answers by count: \n")
-    # for dct in count_sort:
-    #     print("{}: {} --------> with {} matches\n".
-    #           format(i, dct['ans'], dct['count']))
-    #     i += 1
-    #
-    # i = 0
-    # print("Answers by results: \n")
-    # for dct in results_sort:
-    #     print("{}: {} --------> with {} matches \n".
-    #           format(i, dct['ans'], dct['count']))
-    #
-    # os.system('./delete.sh')
+    os.system('./delete.sh')
 
 
 def main():
-    path = "resources/shot-7.51.21 PM.png"
+    print("Script has started \n")
 
-    while not os.path.exists(path):
-        time.sleep(1)
+    try:
+        while True:
+            path = "resources/auto-shot.png"
 
-    if os.path.isfile(path):
-        before = time.time()
-        search(path)
-        after = time.time()
+            while not os.path.exists(path):
+                time.sleep(1)
 
-        print("Time: {}".format(after-before))
+            if os.path.isfile(path):
+                before = time.time()
+                search(path)
+                after = time.time()
+
+                print("Time: {} s\n\n".format(after - before))
+    except KeyboardInterrupt:
+        print("\nGoodbye!")
+
 
 
 if __name__ == "__main__":
