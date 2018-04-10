@@ -6,7 +6,7 @@ import csv
 
 
 def document(q_as, most_likely, time_taken, correct):
-    answers = q_as[0]
+    answers = q_as[1]
     chosen = answers.index(most_likely)
 
     if answers[correct] == most_likely:
@@ -14,10 +14,10 @@ def document(q_as, most_likely, time_taken, correct):
     else:
         score = 0
 
-    csv_dict = {'ques': q_as['ques'], 'ans0': answers[0].ans_str, 'ans1': answers[1].ans_str, 'ans2': answers[2].ans_str,
+    csv_dict = {'ques': q_as[0], 'ans0': answers[0].ans_str, 'ans1': answers[1].ans_str, 'ans2': answers[2].ans_str,
                 'chosen': chosen, 'correct': correct, 'score': score, 'time': time_taken}
 
-    with open("questions_answers.csv", 'a') as csvfile:
+    with open("../questions_answers.csv", 'a') as csvfile:
         fieldnames = ['ques', 'ans0', 'ans1', 'ans2', 'chosen', 'correct', 'score', 'time']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writerow(csv_dict)
@@ -35,7 +35,7 @@ def execute(path):
     os.system('./delete.sh')
     after = time.time()
 
-    time_taken = after - before
+    time_taken = round(after - before, 2)
 
     print("Time: {} s".format(after - before))
 

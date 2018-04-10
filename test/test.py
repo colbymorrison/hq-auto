@@ -1,6 +1,6 @@
 import unittest
 import search
-
+import run
 
 class SearchTest(unittest.TestCase):
     def setUp(self):
@@ -18,14 +18,21 @@ class SearchTest(unittest.TestCase):
 
         self.answers = [ans0, ans1, ans2]
 
-    def test_rank(self):
-        most_likely = search.rank(self.answers)
-        assert(isinstance(most_likely, str))
+    # def test_rank(self):
+    #     most_likely = search.rank(self.answers)
+    #     assert(isinstance(most_likely, str))
+    #
+    #     self.answers[0].results = 4
+    #
+    #     most_likely = search.rank(self.answers)
+    #     assert(most_likely.ans_str == "Test ans0")
 
-        self.answers[0].results = 4
+    def test_document(self):
+        most_likley = self.answers[0]
+        question = "Test question"
+        q_as = [question, self.answers]
 
-        most_likely = search.rank(self.answers)
-        assert(most_likely.ans_str == "Test ans0")
+        run.document(q_as, most_likley, time_taken="2.5s", correct=0)
 
 
 if __name__ == "__main__":
