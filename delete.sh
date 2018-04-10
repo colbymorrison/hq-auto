@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-rm /Users/Colby/Code/Python-Misc/hq/resources/auto-shot.png
+rm /Users/Colby/Code/Python/hq-auto/resources/auto-shot.png

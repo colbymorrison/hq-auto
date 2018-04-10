@@ -6,7 +6,6 @@ import pytesseract
 import os
 import webbrowser
 import inflect
-import csv
 
 
 service = build("customsearch", "v1", developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
@@ -31,6 +30,9 @@ class Answer:
         res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
         search_inf = res['searchInformation']
         self.results = int(search_inf['totalResults'])
+
+    def print_out(self):
+        print("{}, {} , {}. ".format(self.ans_str, self.count, self.results))
 
 
 def img_to_text(path):
@@ -60,7 +62,6 @@ def img_to_text(path):
             ans2 = Answer(lines[ln+2])
             break
 
-    # Return dictionary of question and answers
     q_as = [ques, [ans0, ans1, ans2]]
     return q_as
 
@@ -78,18 +79,18 @@ def google_search_question(question):
         return res, corr_str
 
 
+def rank_helper(answers):
+    found, i = 0, 0
+    for answer in answers:
+        if answer.count == 0:
+            i += 1
+        else:
+            found = answers.index(answer)
 
-# def answer_results(question, answer):
-#     # Creates dictionary of answer, the number of times it appeared in the first 10 google results,
-#     # and the total number of google search results the question/answer combination returned
-#     search_str = "{} {}".format(question, answer.ans_str)
-#     res = service.cse().list(q=search_str, cx="004635228232604600486:dehcqnd7kkq", num=10).execute()
-#     search_inf = res['searchInformation']
-#     answer.results = int(search_inf['totalResults'])
-#
-#     return answer
-#
-#     return {'ans': answer, 'results':  int(search_inf['totalResults'])}
+    if i == 2:
+        return True, found
+    else:
+        return False, found
 
 
 def rank(answers):
@@ -97,12 +98,16 @@ def rank(answers):
     count_sort = sorted(answers, key=lambda a: a.count, reverse=True)
     results_sort = sorted(answers, key=lambda a: a.results, reverse=True)
 
+    boole, found = rank_helper(answers)
+
     if count_sort[0] == results_sort[0]:
         most_likely = count_sort[0]
     elif count_sort[0].count == count_sort[1].count == count_sort[2].count:
         most_likely = results_sort[0]
     elif count_sort[0].results == count_sort[1].results == count_sort[2].results:
             most_likely = count_sort[0]
+    elif boole:
+        most_likely = answers[found]
     else:
         most_likely = "Conflicted: {} had highest count but {} had most results"\
             .format(count_sort[0].ans_str, results_sort[0].ans_str)
@@ -134,18 +139,3 @@ def search_from_photo(path):
     most_likely = rank(answers)
 
     return q_as, most_likely
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

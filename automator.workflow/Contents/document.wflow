@@ -76,7 +76,7 @@
 					<key>interactiveType</key>
 					<integer>1</integer>
 					<key>outputFilePath</key>
-					<string>~/Code/Python-Misc/hq/resources/auto-shot</string>
+					<string>~/Code/Python/hq-auto/resources/auto-shot.png</string>
 					<key>screenshotType</key>
 					<integer>1</integer>
 					<key>timedScreenshot</key>
@@ -215,7 +215,7 @@
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>250.000000:177.000000</string>
+				<string>249.500000:177.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Take Screenshot.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>

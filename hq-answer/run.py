@@ -17,10 +17,12 @@ def document(q_as, most_likely, time_taken, correct):
     csv_dict = {'ques': q_as[0], 'ans0': answers[0].ans_str, 'ans1': answers[1].ans_str, 'ans2': answers[2].ans_str,
                 'chosen': chosen, 'correct': correct, 'score': score, 'time': time_taken}
 
-    with open("../questions_answers.csv", 'a') as csvfile:
+    with open("/Users/Colby/Code/Python/hq-auto/log.csv".format(os.getcwd()), 'a') as csvfile:
         fieldnames = ['ques', 'ans0', 'ans1', 'ans2', 'chosen', 'correct', 'score', 'time']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writerow(csv_dict)
+
+    print("Logged")
 
 
 def execute(path):
@@ -37,9 +39,9 @@ def execute(path):
 
     time_taken = round(after - before, 2)
 
-    print("Time: {} s".format(after - before))
+    print("Time: {} s".format(time_taken))
 
-    correct = int(input("What was the correct answer? (0, 1, 2)"))
+    correct = int(input("What was the correct answer? "))
 
     while not(correct == 0 or correct == 1 or correct == 2):
         correct = input("Input 0, 1, or 2")
@@ -61,9 +63,9 @@ def run_game(path):
 
 def main():
     print("Script has started \n")
-    path = "../resources/shot-7.51.25 PM.png"
+    path = "/Users/Colby/Code/Python/hq-auto/resources/screenshot-3.png"
 
-    if sys.argv[1] == 0:
+    if sys.argv[1] == '0':
         run_game(path)
     else:
         execute(path)

@@ -2,19 +2,25 @@ import unittest
 import search
 import run
 
+
 class SearchTest(unittest.TestCase):
     def setUp(self):
-        ans0 = search.Answer("Test ans0")
-        ans0.count = 2
-        ans0.results = 0
+        ans0 = search.Answer("Feather")
+        ans0.count = 8
+        ans0.results = 25800
 
-        ans1 = search.Answer("Test ans1")
+        ans1 = search.Answer("Noodle soup")
         ans1.count = 0
-        ans0.results = 2
+        ans0.results = 14100
 
-        ans2 = search.Answer("Test ans2")
-        ans2.count = 1
-        ans2.results = 3
+        ans2 = search.Answer("Duck")
+        ans2.count = 0
+        ans2.results = 27100
+
+        Feather, 8, 25800.
+        Noodle
+        soup, 0, 14100.
+        Duck, 0, 27100
 
         self.answers = [ans0, ans1, ans2]
 
