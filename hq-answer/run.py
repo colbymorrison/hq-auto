@@ -63,7 +63,7 @@ def run_game(path):
 
 def main():
     print("Script has started \n")
-    path = "/Users/Colby/Code/Python/hq-auto/resources/screenshot-3.png"
+    path = "/Users/Colby/Code/Python/hq-auto/resources/auto-shot.png"
 
     if sys.argv[1] == '0':
         run_game(path)
