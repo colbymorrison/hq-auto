@@ -2,11 +2,10 @@
 
 from PIL import Image
 from googleapiclient.discovery import build
+import pandas as pd
 import pytesseract
 import os
 import webbrowser
-import inflect
-
 
 service = build("customsearch", "v1", developerKey="AIzaSyCVsjb-Ar3mE-oZRiTYjsG4qLm85NxLkws")
 
@@ -40,10 +39,9 @@ def img_to_text(path):
     tess = pytesseract.image_to_string(Image.open(path))
     ques, ans0, ans1, ans2 = "", "", "", ""
     ln = 0
-    lines = tess.splitlines()
 
     # remove blank lines and quotes
-    tess = os.linesep.join([s for s in lines if s])
+    tess = os.linesep.join([s for s in tess.splitlines() if s])
     tess = tess.replace('"', ' ')
     tess = tess.replace('\'', ' ')
 
@@ -115,8 +113,21 @@ def rank(answers):
     return most_likely
 
 
-def search_from_photo(path):
-    q_as = img_to_text(path)
+def q_as_from_log():
+    ln = int(input("Enter line number of log file to run with "))
+
+    df = pd.read_csv("../log.csv")
+    df = df.iloc[ln-2]
+
+    q_as = [df['QUESTION'], [Answer(df[' ANSWER0']), Answer(df[' ANSWER1']), Answer(df[' ANSWER2'])]]
+    return q_as
+
+
+def search_and_rank(mode):
+    if mode == 'l':
+        q_as = q_as_from_log()
+    else:
+        q_as = img_to_text(mode)
 
     question_raw = q_as[0]
     answers = q_as[1]

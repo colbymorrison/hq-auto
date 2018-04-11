@@ -3,6 +3,18 @@ import time
 import os
 import sys
 import csv
+import pandas as pd
+import re
+
+
+def statistics(arg):
+    df = pd.read_csv("../log.csv")
+    total = df.shape[0]
+    percent = 100 * df[" SCORE"].value_counts(normalize=True)[1]
+    print("Questions attempted: {} \nPercent correct: {}".format(total, round(percent, 2)))
+
+    if arg == "-sv":
+        print(df)
 
 
 def document(q_as, most_likely, time_taken, correct):
@@ -25,9 +37,10 @@ def document(q_as, most_likely, time_taken, correct):
     print("Logged")
 
 
-def execute(path):
+def execute(mode):
     before = time.time()
-    q_as, most_likely = search.search_from_photo(path)
+
+    q_as, most_likely = search.search_and_rank(mode)
 
     if isinstance(most_likely, str):
         print(most_likely)
@@ -48,10 +61,14 @@ def execute(path):
 
     document(q_as, most_likely, time_taken, correct)
 
+    print('-'*50)
 
-def run_game(path):
+
+def run_game():
+    path = "/Users/Colby/Code/Python/hq-auto/resources/auto-shot.png"
     try:
         while True:
+            print("Waiting for screenshot...\n")
             while not os.path.exists(path):
                 time.sleep(1)
 
@@ -62,13 +79,18 @@ def run_game(path):
 
 
 def main():
-    print("Script has started \n")
-    path = "/Users/Colby/Code/Python/hq-auto/resources/auto-shot.png"
+    arg1 = sys.argv[1]
 
-    if sys.argv[1] == '0':
-        run_game(path)
+    if arg1 == '-s' or arg1 == '-sv':
+        statistics(arg1)
     else:
-        execute(path)
+        print("Script has started \n")
+        if arg1 == '-g':
+            run_game()
+        elif arg1 == '-l':
+            execute(mode='l')
+        else:
+            execute("/Users/Colby/Code/Python/hq-auto/resources/auto-shot.png")
 
 
 if __name__ == "__main__":
