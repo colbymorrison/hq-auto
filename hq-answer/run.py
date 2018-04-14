@@ -9,6 +9,7 @@ import re
 
 def statistics(arg):
     df = pd.read_csv("../log.csv")
+    df.drop_duplicates("QUESTION")
     total = df.shape[0]
     percent = 100 * df[" SCORE"].value_counts(normalize=True)[1]
     print("Questions attempted: {} \nPercent correct: {}".format(total, round(percent, 2)))
@@ -19,12 +20,16 @@ def statistics(arg):
 
 def document(q_as, most_likely, time_taken, correct):
     answers = q_as[1]
-    chosen = answers.index(most_likely)
-
-    if answers[correct] == most_likely:
-        score = 1
+    if isinstance(most_likely, str):
+        chosen = 2
+        score = 2
     else:
-        score = 0
+        chosen = answers.index(most_likely)
+
+        if answers[correct] == most_likely:
+            score = 1
+        else:
+            score = 0
 
     csv_dict = {'ques': q_as[0], 'ans0': answers[0].ans_str, 'ans1': answers[1].ans_str, 'ans2': answers[2].ans_str,
                 'chosen': chosen, 'correct': correct, 'score': score, 'time': time_taken}
